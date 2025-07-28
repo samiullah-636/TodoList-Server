@@ -24,31 +24,14 @@ void send_to_client(char* message,int sock)
 {
 send(sock, message, strlen(message), 0);
 }
-char username[32];
-void getusername(int sock)
-{
 
- memset(username, 0, sizeof(username));
-ssize_t received = recv(sock, username, sizeof(username), 0); 
-    printf("[DEBUG] Username Received: %s (%ld bytes)\n", username, received); 
-    
-}
-char password[63];
-void getpassword(int sock)
-{
-
- memset(password, 0, sizeof(password));
-ssize_t received = recv(sock, password, sizeof(password), 0); 
-    printf("[DEBUG] Password Received: %s (%ld bytes)\n", password, received);
- // Receiving the 1st number from the client
-     
-}
 bool user_exists(char* username)
 {
 FILE* file = fopen(USER_FILE,"r");
 if (!file)
 {
 printf("File Doesn't Exists");
+return false;
 }
 
 char existing_user[1024],existing_pass[1024];
@@ -141,9 +124,9 @@ int clientSocketFD = atoi((char *)str);
             ssize_t Pbytes_recv = recv(clientSocketFD, password, sizeof(password), 0);
             printf("[DEBUG] Password Received: %s\n", password);
             printf("[DEBUG] Password BYTES Received: %ld\n", Pbytes_recv);
-
+            Register(username,password,clientSocketFD);
             // Send registration message
-            send_to_client("Registration Done.\n", clientSocketFD);
+           // send_to_client("Registration Done.\n", clientSocketFD);
 
         } else if (choice == 3) {
             printf("Client disconnected by choice.\n");
