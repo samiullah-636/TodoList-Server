@@ -92,7 +92,7 @@ int clientSocketFD = atoi((char *)str);
     char username[1024];
     char password[1024];
     char ack_buf[8];
-
+    printf("Client Connected :) \n");
     while (1) {
         // Wait for client to be ready (handshake ack for last round)
         memset(ack_buf, 0, sizeof(ack_buf));
@@ -103,6 +103,10 @@ int clientSocketFD = atoi((char *)str);
 
         // Receive choice
         ssize_t bytes_recv = recv(clientSocketFD, &choice, sizeof(choice), 0);
+        if (bytes_recv <= 0) {
+            printf("Client disconnected unexpectedly.\n");
+            break;
+        }
         printf("[DEBUG] CHOICE BYTES: %ld\n", bytes_recv);
         printf("[DEBUG] CHOICE: %d\n", choice);
 

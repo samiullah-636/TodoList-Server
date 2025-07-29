@@ -54,11 +54,17 @@ printf("BUFFER BYTES: %ld\n", bytes_recv);
         fgets(input, sizeof(input), stdin);
 	input[strcspn(input, "\n")] = 0;
 	choice= atoi(input);
-	printf("CHOICE: %d\n",choice);
-	printf("CHOICE BYTES: %ld\n",sizeof(choice));
+	//printf("CHOICE: %d\n",choice);
+	//printf("CHOICE BYTES: %ld\n",sizeof(choice));
         send(sock, &choice, sizeof(choice), 0);
+        
+        if (choice==3)
+        {
+        printf("Exiting... \n");
+        break;
+        }
 
-        if (choice == 1 || choice == 2) {
+        else if (choice == 1 || choice == 2) {
             printf("Enter Username: ");
             fgets(username, sizeof(username), stdin);
             username[strcspn(username, "\n")] = '\0';
