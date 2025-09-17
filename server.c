@@ -19,7 +19,7 @@
 sqlite3 *open_db(const char *filename){
 sqlite3 *db = NULL;
 if (sqlite3_open(filename , &db) != SQLITE_OK){
-	printf("Oops!, Can't open Database");
+	fprintf(stderr, "Oops!, Can't open Database: %s\n", sqlite3_errmsg(db));
 	sqlite3_close(db);
 	return NULL;
 }
@@ -31,6 +31,34 @@ void close_db(sqlite3 *db)
 if(db) sqlite3_close(db);
 }
 
+int create_table(sqlite3 *db)
+{
+	const char *sqlTB=
+		"CREATE TABLE IF NOT EXISTS Users (
+		 "User_id INTEGER PRIMARY KEY AUTOINCREMENT,
+		 "Username TEXT UNIQUE NOT NULL,
+		 "Password TEXT NOT NULL);
+
+		"CREATE TABLE IF NOT EXISTS Tasks (
+		 "Task_id INTEGER PRIMARY KEY AUTOINCREMENT,
+		 "User_id INTEGER  NOT NULL,
+		 "Title TEXT NOT NULL,
+		 "Description TEXT,
+		 "Status TEXT DEFAULT 'pending',
+		 "Deadline DATETIME,
+		 "created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+		 "FOREIGN KEY(User_id) REFERENCES Users(user_id) ON DELETE CASCADE);";
+	char *err = NULL;
+	int rc = sqlite3_exec(db, sqlTB, 0, 0, &err);
+	if(rc != SQLITE_OK)
+	{
+	fprintf(stderr, "create_table  error: %s\n", err);
+	sqlite3_free(err);
+	return rc;
+	}
+
+	return SQLITE_OK;
+}
 // Function to store address and info of each client
 struct sockaddr_in* createAddress() {
     struct sockaddr_in *address = malloc(sizeof(struct sockaddr_in));
