@@ -8,9 +8,29 @@
 #include <stdlib.h>
 #include <pthread.h>
 #include <stdbool.h>
+#include <sqlite3.h>
+
 
 #define PORT 8080
 #define USER_FILE "users.txt"
+#define DB_FILE "Todo_Server.db"
+
+
+sqlite3 *open_db(const char *filename){
+sqlite3 *db = NULL;
+if (sqlite3_open(filename , &db) != SQLITE_OK){
+	printf("Oops!, Can't open Database");
+	sqlite3_close(db);
+	return NULL;
+}
+return db;
+}
+
+void close_db(sqlite3 *db)
+{
+if(db) sqlite3_close(db);
+}
+
 // Function to store address and info of each client
 struct sockaddr_in* createAddress() {
     struct sockaddr_in *address = malloc(sizeof(struct sockaddr_in));
@@ -20,13 +40,14 @@ struct sockaddr_in* createAddress() {
     return address;
 }
 
+void
+
 void send_to_client(char* message,int sock)
 {
 send(sock, message, strlen(message), 0);
 }
 
-bool user_exists(char* username)
-{
+bool user_exists(char* username){
 FILE* file = fopen(USER_FILE,"r");
 if (!file)
 {
