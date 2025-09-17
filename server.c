@@ -24,12 +24,12 @@ if (sqlite3_open(filename , &db) != SQLITE_OK){
 	return NULL;
 }
 return db;
-}
+} //open_db ends here
 
 void close_db(sqlite3 *db)
 {
 if(db) sqlite3_close(db);
-}
+} //close_db ends here
 
 int create_table(sqlite3 *db)
 {
@@ -58,7 +58,22 @@ int create_table(sqlite3 *db)
 	}
 
 	return SQLITE_OK;
-}
+} //create_table ends here
+
+int insert_user(sqlite3 *db, const char *username, 
+const char *password)
+{
+char *sql_insert = sqlite3_mprintf(
+"INSERT INTO Users(Username, Password) VALUES ('%q', '%q');",username, password);
+char *err = NULL;
+int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
+	if(rc != SQLITE_OK){
+	fprintf(stderr, "ERROR INSERTING DATA :( %s\n",err);
+	sqlite3_free(err);
+	return rc;
+	}
+	return SQLITE_OK;
+} // insert_user ends here
 // Function to store address and info of each client
 struct sockaddr_in* createAddress() {
     struct sockaddr_in *address = malloc(sizeof(struct sockaddr_in));
