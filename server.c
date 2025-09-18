@@ -9,12 +9,12 @@
 #include <pthread.h>
 #include <stdbool.h>
 #include <sqlite3.h>
+#include <openssl/sha.h>
 
 
 #define PORT 8080
-#define USER_FILE "users.txt"
 #define DB_FILE "Todo_Server.db"
-
+#define HASH_HEX_LEN (SHA256_DIGEST_LENGTH*2+1)
 
 // Function to store address and info of each client
 struct sockaddr_in* createAddress() {
@@ -24,6 +24,29 @@ struct sockaddr_in* createAddress() {
     address->sin_addr.s_addr = INADDR_ANY;
     return address;
 }
+
+
+void bytes_to_hex(const unsigned char *value, size_t valueLen, char *hexValue)
+  {
+static const char hex[] = "0123456789abcdef";
+for (size_t i=0; i<valueLen; i++)
+    {
+      hexValue[i*2] = hex[(value[i] >> 4) & 0xF];
+      hexValue[i*2 + 1] = hex[value[i] & 0xF];
+    }
+  hexValue[valueLen*2] = '\0';
+  }
+ 
+
+void sha256_hash(const char *password , char *passOutput)
+  {
+    unsigned char hash[SHA256_DIGEST_LENGTH];
+    SHA256((const unsigned char *)password, 
+    strlen(password), hash);
+    bytes_to_hex(hash, SHA256_DIGEST_LENGTH, passOutput);
+  }
+
+
 
 sqlite3 *open_db(const char *filename){
 sqlite3 *db = NULL;
@@ -150,6 +173,8 @@ void Register(char* username , char* password, int sock)
 //send_to_client("Username Already Exists\n",sock);
 //return;
 //}
+char hash_hex[HASH_HEX_LEN];
+sha256_hash(password,hash_hex);
 sqlite3 *db = open_db(DB_FILE);
 if (!db) {
         printf("Error opening DB for writing.\n");
@@ -160,7 +185,7 @@ if (create_table(db) != SQLITE_OK)
 	close_db(db);
         printf("Error creating tables.\n");
 }
-if (insert_user(db, username, password) != SQLITE_OK)
+if (insert_user(db, username, hash_hex) != SQLITE_OK)
 {
 printf("Insert failed \n");
 }
