@@ -125,26 +125,24 @@ void send_to_client(char* message,int sock)
 send(sock, message, strlen(message), 0);
 }
 
-//bool user_exists(char* username){
-//FILE* file = fopen(USER_FILE,"r");
-//if (!file)
-//{
-//printf("File Doesn't Exists");
-//return false;
-//}
+bool user_exists(char* username){
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        printf("Error opening DB for writing.\n");
+        return;
+    }
+char existing_user[1024],existing_pass[1024];
 
-//char existing_user[1024],existing_pass[1024];
+while (fscanf(file, "%s %s", existing_user, existing_pass) != EOF) {
+        if (strcmp(existing_user, username) == 0) {
+            fclose(file);
+            return true;  // User already exists
+        }
+    }
 
-//while (fscanf(file, "%s %s", existing_user, existing_pass) != EOF) {
-  //      if (strcmp(existing_user, username) == 0) {
-    //        fclose(file);
-      //      return true;  // User already exists
-       // }
-    //}
-
-    //fclose(file);
-    //return false;
-//}
+    fclose(file);
+    return false;
+}
 //void login(char* username, char* password, int socket) {
   //  if (!user_exists(username)) {
     //    send_to_client("❌ User not found",socket);
