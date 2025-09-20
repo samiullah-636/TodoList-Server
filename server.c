@@ -148,27 +148,55 @@ while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
 	return true;
 	}
 }
-//while (fscanf(file, "%s %s", existing_user, existing_pass) != EOF) {
-    //    if (strcmp(existing_user, username) == 0) {
-   	//        fclose(file);
-            //return true;  // User already exists
-        //}
-    //}
+    close_db(db);
+    return false;
+} //User exists function ends here
 
+bool verify_password(char* username, char* password)
+{
+char hash_hex[HASH_HEX_LEN];
+sha256_hash(password,hash_hex);
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB for writing.%s\n", sqlite3_errmsg(db));
+        return 1;
+   	 }
+sqlite3_stmt *stmt;
+const char *sql = "SELECT password FROM Users WHERE username = ?;";
+int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+if (rc != SQLITE_OK)
+{
+fprintf(stderr, "can't read username from DB: %s\n", sqlite3_errmsg(db));
+return 1;
+}
+sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+{
+	char *db_password = (char *)sqlite3_column_text(stmt, 0);
+	if (strcmp(db_password, hash_hex) == 0)
+	{
+	close_db(db);
+	return true;
+	}
+}
     close_db(db);
     return false;
 }
-//void login(char* username, char* password, int socket) {
-  //  if (!user_exists(username)) {
-    //    send_to_client("❌ User not found",socket);
-     //   return;
-   // }
+// verify_password function ends here
+void login(char* username, char* password, int sock) {
+    if (!user_exists(username)) {
+        send_to_client("❌ User not found",sock);
+        return;
+    }
 
-    //if (!verify_password(username, password)) {
-      //  send_to_client("❌ Wrong password",socket);
-       // return;
-   // }
-
+    if (!verify_password(username, password)) {
+        send_to_client("❌ Wrong password",sock);
+        return;
+    }
+    else
+    {
+	    send_to_client("LOGIN SUCCESSFUL :)",sock);
+    }
     //char token[64];
     //generate_token(token);
    // time_t expiry = time(NULL) + 1800;  // 30 min expiry
@@ -177,7 +205,7 @@ while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     //char response[128];
     //sprintf(response, "LOGIN_SUCCESS token=%s", token);
     //send_to_client(response);
-//}
+}
 
 void Register(char* username , char* password, int sock)
 {
@@ -239,7 +267,7 @@ int clientSocketFD = atoi((char *)str);
            /// printf("[DEBUG] Password BYTES Received: %ld\n", P_bytes_recv);
 
             // Send login message
-            send_to_client("Login Successfully.\n", clientSocketFD);
+            login(username,password,clientSocketFD);
 
         } else if (choice == 1) {
             ssize_t Ubytes_recv = recv(clientSocketFD, username, sizeof(username), 0);
