@@ -125,23 +125,39 @@ void send_to_client(char* message,int sock)
 send(sock, message, strlen(message), 0);
 }
 
-//bool user_exists(char* username){
-//sqlite3 *db = open_db(DB_FILE);
-//if (!db) {
-  //      printf("Error opening DB for writing.\n");
-   //     return;
-   // }
-//char existing_user[1024],existing_pass[1024];
+bool user_exists(char* username){
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB for writing.%s\n", sqlite3_errmsg(db));
+        return 1;
+   	 }
+sqlite3_stmt *stmt;
+const char *sql = "SELECT username FROM Users;";
+int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+if (rc != SQLITE_OK)
+{
+fprintf(stderr, "can't read username from DB: %s\n", sqlite3_errmsg(db));
+return 1;
+}
+while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+{
+	char *existing_username = (char *)sqlite3_column_text(stmt, 0);
+	if (strcmp(existing_username, username) == 0)
+	{
+	close_db(db);
+	return true;
+	}
+}
 //while (fscanf(file, "%s %s", existing_user, existing_pass) != EOF) {
-  //      if (strcmp(existing_user, username) == 0) {
-    //        fclose(file);
-      //      return true;  // User already exists
-     //   }
-   // }
+    //    if (strcmp(existing_user, username) == 0) {
+   	//        fclose(file);
+            //return true;  // User already exists
+        //}
+    //}
 
-    //fclose(file);
-    //return false;
-//}
+    close_db(db);
+    return false;
+}
 //void login(char* username, char* password, int socket) {
   //  if (!user_exists(username)) {
     //    send_to_client("❌ User not found",socket);
@@ -165,11 +181,11 @@ send(sock, message, strlen(message), 0);
 
 void Register(char* username , char* password, int sock)
 {
-//if (user_exists(username))
-//{
-//send_to_client("Username Already Exists\n",sock);
-//return;
-//}
+if (user_exists(username))
+{
+send_to_client("Username Already Exists\n",sock);
+return;
+}
 char hash_hex[HASH_HEX_LEN];
 sha256_hash(password,hash_hex);
 sqlite3 *db = open_db(DB_FILE);
