@@ -48,14 +48,14 @@ send(sock, "ACK", 3, 0);
 ssize_t bytes_recv = recv(sock, menu, sizeof(menu), 0);
 menu[bytes_recv] = '\0';
 printf("%s", menu);
-printf("BUFFER BYTES: %ld\n", bytes_recv);
+//printf("BUFFER BYTES: %ld\n", bytes_recv);
 
         
         fgets(input, sizeof(input), stdin);
 	input[strcspn(input, "\n")] = 0;
 	choice= atoi(input);
-	//printf("CHOICE: %d\n",choice);
-	//printf("CHOICE BYTES: %ld\n",sizeof(choice));
+//	//printf("CHOICE: %d\n",choice);
+//	//printf("CHOICE BYTES: %ld\n",sizeof(choice));
         send(sock, &choice, sizeof(choice), 0);
         
         if (choice==3)
@@ -69,21 +69,21 @@ printf("BUFFER BYTES: %ld\n", bytes_recv);
             fgets(username, sizeof(username), stdin);
             username[strcspn(username, "\n")] = '\0';
 		size_t length = strlen(username);
-		printf("USERNAME BYTES: %ld\n",length);
+//		printf("USERNAME BYTES: %ld\n",length);
             send(sock, username, strlen(username)+1, 0);
 
             printf("Enter Password: ");
             fgets(password, sizeof(password), stdin);
             password[strcspn(password, "\n")] = '\0';
 		size_t plength = strlen(password);
-		printf("PASSWORD BYTES: %ld\n",plength);
+//		printf("PASSWORD BYTES: %ld\n",plength);
             send(sock, password, strlen(password)+1, 0);
         }
 
         // Receive and display the result
         memset(buffer, 0, sizeof(buffer));
         ssize_t R_bytes_recv=recv(sock, buffer, sizeof(buffer), 0);
-printf("FINAL BYTES: %ld\n",R_bytes_recv);
+//printf("FINAL BYTES: %ld\n",R_bytes_recv);
             printf("%s\n", buffer);
 		memset(buffer, 0, sizeof(buffer));
             }

@@ -125,24 +125,23 @@ void send_to_client(char* message,int sock)
 send(sock, message, strlen(message), 0);
 }
 
-bool user_exists(char* username){
-sqlite3 *db = open_db(DB_FILE);
-if (!db) {
-        printf("Error opening DB for writing.\n");
-        return;
-    }
-char existing_user[1024],existing_pass[1024];
+//bool user_exists(char* username){
+//sqlite3 *db = open_db(DB_FILE);
+//if (!db) {
+  //      printf("Error opening DB for writing.\n");
+   //     return;
+   // }
+//char existing_user[1024],existing_pass[1024];
+//while (fscanf(file, "%s %s", existing_user, existing_pass) != EOF) {
+  //      if (strcmp(existing_user, username) == 0) {
+    //        fclose(file);
+      //      return true;  // User already exists
+     //   }
+   // }
 
-while (fscanf(file, "%s %s", existing_user, existing_pass) != EOF) {
-        if (strcmp(existing_user, username) == 0) {
-            fclose(file);
-            return true;  // User already exists
-        }
-    }
-
-    fclose(file);
-    return false;
-}
+    //fclose(file);
+    //return false;
+//}
 //void login(char* username, char* password, int socket) {
   //  if (!user_exists(username)) {
     //    send_to_client("❌ User not found",socket);
@@ -204,7 +203,7 @@ int clientSocketFD = atoi((char *)str);
         recv(clientSocketFD, ack_buf, sizeof(ack_buf), 0);
 
         // Send menu
-        send_to_client("\n1. Register\n2. Login\n3. Exit\nEnter Your Choice: ", clientSocketFD);
+        send_to_client("[1].Register  [2].Login  [3].Exit \n", clientSocketFD);
 
         // Receive choice
         ssize_t bytes_recv = recv(clientSocketFD, &choice, sizeof(choice), 0);
@@ -212,27 +211,27 @@ int clientSocketFD = atoi((char *)str);
             printf("Client disconnected unexpectedly.\n");
             break;
         }
-        printf("[DEBUG] CHOICE BYTES: %ld\n", bytes_recv);
-        printf("[DEBUG] CHOICE: %d\n", choice);
+        //printf("[DEBUG] CHOICE BYTES: %ld\n", bytes_recv);
+        //printf("[DEBUG] CHOICE: %d\n", choice);
 
         if (choice == 2) {
             ssize_t U_bytes_recv = recv(clientSocketFD, username, sizeof(username), 0);
             ssize_t P_bytes_recv = recv(clientSocketFD, password, sizeof(password), 0);
-            printf("[DEBUG] Username Received: %s\n", username);
-            printf("[DEBUG] Username BYTES Received: %ld\n", U_bytes_recv);
-            printf("[DEBUG] Password Received: %s\n", password);
-            printf("[DEBUG] Password BYTES Received: %ld\n", P_bytes_recv);
+          //  printf("[DEBUG] Username Received: %s\n", username);
+            //printf("[DEBUG] Username BYTES Received: %ld\n", U_bytes_recv);
+            //printf("[DEBUG] Password Received: %s\n", password);
+           /// printf("[DEBUG] Password BYTES Received: %ld\n", P_bytes_recv);
 
             // Send login message
             send_to_client("Login Successfully.\n", clientSocketFD);
 
         } else if (choice == 1) {
             ssize_t Ubytes_recv = recv(clientSocketFD, username, sizeof(username), 0);
-            printf("[DEBUG] Username Received: %s\n", username);
-            printf("[DEBUG] Username BYTES Received: %ld\n", Ubytes_recv);
+            //printf("[DEBUG] Username Received: %s\n", username);
+            //printf("[DEBUG] Username BYTES Received: %ld\n", Ubytes_recv);
             ssize_t Pbytes_recv = recv(clientSocketFD, password, sizeof(password), 0);
-            printf("[DEBUG] Password Received: %s\n", password);
-            printf("[DEBUG] Password BYTES Received: %ld\n", Pbytes_recv);
+            //printf("[DEBUG] Password Received: %s\n", password);
+            //printf("[DEBUG] Password BYTES Received: %ld\n", Pbytes_recv);
             Register(username,password,clientSocketFD);
             // Send registration message
            // send_to_client("Registration Done.\n", clientSocketFD);
