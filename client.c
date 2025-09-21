@@ -44,13 +44,24 @@ menu[bytes_recv] = '\0';
 printf("%s", menu);
 //printf("BUFFER BYTES: %ld\n", bytes_recv);
 }
+
+int handle_choice(int sock)
+{        
+	char input[1024];
+         int choice;
+	 fgets(input, sizeof(input), stdin);
+	input[strcspn(input, "\n")] = 0;
+	choice= atoi(input);
+//	//printf("CHOICE: %d\n",choice);
+//	//printf("CHOICE BYTES: %ld\n",sizeof(choice));
+        send(sock, &choice, sizeof(choice), 0);
+        return choice;
+}
 int main() {
     int sock;
     struct sockaddr_in server_address;
-    char menu[1024];
     char buffer[1024];
     int choice;
-    char input[1024];
     int ack=1;
 
     // Create socket
@@ -75,13 +86,7 @@ int main() {
     while (1) {
        handle_mainmenu(sock);
 
-        
-        fgets(input, sizeof(input), stdin);
-	input[strcspn(input, "\n")] = 0;
-	choice= atoi(input);
-//	//printf("CHOICE: %d\n",choice);
-//	//printf("CHOICE BYTES: %ld\n",sizeof(choice));
-        send(sock, &choice, sizeof(choice), 0);
+       choice = handle_choice(sock);
         
         if (choice==3)
         {
