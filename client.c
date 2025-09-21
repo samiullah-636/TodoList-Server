@@ -28,6 +28,22 @@ char username[1024];
             send(sock, username, strlen(username)+1, 0);
 
 }
+void handle_mainmenu(int sock)
+{
+	char menu[1024];
+	        // Clear the buffer to avoid garbage value
+        memset(menu, 0, sizeof(menu));
+
+        // Receive and print the menu from the server
+        // Send ACK to server to request menu
+send(sock, "ACK", 3, 0);
+
+// Now receive the menu
+ssize_t bytes_recv = recv(sock, menu, sizeof(menu), 0);
+menu[bytes_recv] = '\0';
+printf("%s", menu);
+//printf("BUFFER BYTES: %ld\n", bytes_recv);
+}
 int main() {
     int sock;
     struct sockaddr_in server_address;
@@ -57,18 +73,7 @@ int main() {
     }
 
     while (1) {
-        // Clear the buffer to avoid garbage value
-        memset(menu, 0, sizeof(menu));
-
-        // Receive and print the menu from the server
-        // Send ACK to server to request menu
-send(sock, "ACK", 3, 0);
-
-// Now receive the menu
-ssize_t bytes_recv = recv(sock, menu, sizeof(menu), 0);
-menu[bytes_recv] = '\0';
-printf("%s", menu);
-//printf("BUFFER BYTES: %ld\n", bytes_recv);
+       handle_mainmenu(sock);
 
         
         fgets(input, sizeof(input), stdin);
