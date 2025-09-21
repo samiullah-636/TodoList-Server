@@ -57,10 +57,19 @@ int handle_choice(int sock)
         send(sock, &choice, sizeof(choice), 0);
         return choice;
 }
+
+void handle_response(int sock)
+{
+char buffer[1024];
+// Receive and display the result
+ memset(buffer, 0, sizeof(buffer));
+ ssize_t R_bytes_recv=recv(sock, buffer, sizeof(buffer), 0);
+//printf("FINAL BYTES: %ld\n",R_bytes_recv);
+ printf("%s\n", buffer);
+}
 int main() {
     int sock;
     struct sockaddr_in server_address;
-    char buffer[1024];
     int choice;
     int ack=1;
 
@@ -99,13 +108,9 @@ int main() {
 		send_password(sock);
         }
 
-        // Receive and display the result
-        memset(buffer, 0, sizeof(buffer));
-        ssize_t R_bytes_recv=recv(sock, buffer, sizeof(buffer), 0);
-printf("FINAL BYTES: %ld\n",R_bytes_recv);
-            printf("%s\n", buffer);
-		memset(buffer, 0, sizeof(buffer));
-            }
+	handle_response(sock);
+
+                    }
 
     close(sock);
     return 0;
