@@ -5,15 +5,35 @@
 #include <arpa/inet.h>
 
 #define PORT 8080
+void send_password(int sock)
+{
+	char password[1024];
+ 
+	    printf("Enter Password: ");
+            fgets(password, sizeof(password), stdin);
+            password[strcspn(password, "\n")] = '\0';
+		size_t plength = strlen(password);
+//		printf("PASSWORD BYTES: %ld\n",plength);
+            send(sock, password, strlen(password)+1, 0);
+}
 
+void send_username(int sock)
+{
+char username[1024];
+            printf("Enter Username: ");
+            fgets(username, sizeof(username), stdin);
+            username[strcspn(username, "\n")] = '\0';
+		size_t length = strlen(username);
+//		printf("USERNAME BYTES: %ld\n",length);
+            send(sock, username, strlen(username)+1, 0);
+
+}
 int main() {
     int sock;
     struct sockaddr_in server_address;
     char menu[1024];
     char buffer[1024];
     int choice;
-    char username[1024];
-    char password[1024];
     char input[1024];
     int ack=1;
 
@@ -65,25 +85,14 @@ printf("%s", menu);
         }
 
         else if (choice == 1 || choice == 2) {
-            printf("Enter Username: ");
-            fgets(username, sizeof(username), stdin);
-            username[strcspn(username, "\n")] = '\0';
-		size_t length = strlen(username);
-//		printf("USERNAME BYTES: %ld\n",length);
-            send(sock, username, strlen(username)+1, 0);
-
-            printf("Enter Password: ");
-            fgets(password, sizeof(password), stdin);
-            password[strcspn(password, "\n")] = '\0';
-		size_t plength = strlen(password);
-//		printf("PASSWORD BYTES: %ld\n",plength);
-            send(sock, password, strlen(password)+1, 0);
+		send_username(sock);
+		send_password(sock);
         }
 
         // Receive and display the result
         memset(buffer, 0, sizeof(buffer));
         ssize_t R_bytes_recv=recv(sock, buffer, sizeof(buffer), 0);
-//printf("FINAL BYTES: %ld\n",R_bytes_recv);
+printf("FINAL BYTES: %ld\n",R_bytes_recv);
             printf("%s\n", buffer);
 		memset(buffer, 0, sizeof(buffer));
             }
