@@ -58,14 +58,53 @@ int handle_choice(int sock)
         return choice;
 }
 
+void handle_todoresponse(int sock)
+{
+char buffer[1024];
+// Receive and display the result
+ memset(buffer, 0, sizeof(buffer));
+ ssize_t R_bytes_recv=recv(sock, buffer, sizeof(buffer), 0);
+ printf("%s\n", buffer);
+}
+
+void handle_todomenu(int sock)
+{
+	while(1)
+	{
+		char menu[1024];
+	        // Clear the buffer to avoid garbage value
+        memset(menu, 0, sizeof(menu));
+
+        // Receive and print the menu from the server
+        // Send ACK to server to request menu
+send(sock, "ACK", 3, 0);
+
+// Now receive the menu
+ssize_t bytes_recv = recv(sock, menu, sizeof(menu), 0);
+menu[bytes_recv] = '\0';
+printf("%s", menu);
+//printf("BUFFER BYTES: %ld\n", bytes_recv);
+int choice = handle_choice(sock);
+if (choice == 6)
+{
+	printf("Logging out..\n");
+	return;
+}
+handle_todoresponse(sock);
+
+	}
+}
 void handle_response(int sock)
 {
 char buffer[1024];
 // Receive and display the result
  memset(buffer, 0, sizeof(buffer));
  ssize_t R_bytes_recv=recv(sock, buffer, sizeof(buffer), 0);
-//printf("FINAL BYTES: %ld\n",R_bytes_recv);
  printf("%s\n", buffer);
+if (R_bytes_recv == 44)
+{
+	handle_todomenu(sock);
+}
 }
 int main() {
     int sock;
