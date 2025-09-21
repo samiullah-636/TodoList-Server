@@ -124,11 +124,49 @@ void send_to_client(char* message,int sock)
 {
 send(sock, message, strlen(message), 0);
 }
-
+void Todo_Menu(int sock)
+{
+int choice;
+char ack_buf[8];
+while(1)
+{
+memset(ack_buf, 0, sizeof(ack_buf));
+recv(sock, ack_buf, sizeof(ack_buf), 0);
+send_to_client("[1].Add  [2].List  [3].Complete  [4].Update  [5].Remove  [6].Logout \n> ",sock);
+ssize_t bytes_recv = recv(sock, &choice, sizeof(choice), 0);
+        if (bytes_recv <= 0) {
+            printf("Client disconnected unexpectedly.\n");
+            break;
+        }
+switch (choice)
+   { 
+   case 1:
+	send_to_client("Add Task called\n",sock);
+	break;
+   case 2:
+	send_to_client("List Task called\n",sock);
+	break;
+   case 3:
+	send_to_client("Complete Task called\n",sock);
+	break;
+   case 4:
+	send_to_client("Update Task called\n",sock);
+	break;
+   case 5:
+	send_to_client("Remove Task called\n",sock);
+	break;
+   case 6:
+	return;
+   default:
+	send_to_client("Invalid option :(\n",sock);
+	break;
+   }
+}
+}
 bool user_exists(char* username){
 sqlite3 *db = open_db(DB_FILE);
 if (!db) {
-        fprintf(stderr,"Error opening DB for writing.%s\n", sqlite3_errmsg(db));
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
         return 1;
    	 }
 sqlite3_stmt *stmt;
@@ -144,6 +182,7 @@ while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
 	char *existing_username = (char *)sqlite3_column_text(stmt, 0);
 	if (strcmp(existing_username, username) == 0)
 	{
+		sqlite3_finalize(stmt);
 	close_db(db);
 	return true;
 	}
@@ -158,7 +197,7 @@ char hash_hex[HASH_HEX_LEN];
 sha256_hash(password,hash_hex);
 sqlite3 *db = open_db(DB_FILE);
 if (!db) {
-        fprintf(stderr,"Error opening DB for writing.%s\n", sqlite3_errmsg(db));
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
         return 1;
    	 }
 sqlite3_stmt *stmt;
@@ -166,7 +205,7 @@ const char *sql = "SELECT password FROM Users WHERE username = ?;";
 int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
 if (rc != SQLITE_OK)
 {
-fprintf(stderr, "can't read username from DB: %s\n", sqlite3_errmsg(db));
+fprintf(stderr, "can't read from DB: %s\n", sqlite3_errmsg(db));
 return 1;
 }
 sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
@@ -175,6 +214,7 @@ while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
 	char *db_password = (char *)sqlite3_column_text(stmt, 0);
 	if (strcmp(db_password, hash_hex) == 0)
 	{
+		sqlite3_finalize(stmt);
 	close_db(db);
 	return true;
 	}
@@ -195,7 +235,9 @@ void login(char* username, char* password, int sock) {
     }
     else
     {
-	    send_to_client("LOGIN SUCCESSFUL :)",sock);
+	    send_to_client("✅ Login successful!\n✨ Welcome aboard ✨",sock);
+	    Todo_Menu(sock);
+
     }
     //char token[64];
     //generate_token(token);
@@ -247,7 +289,7 @@ int clientSocketFD = atoi((char *)str);
         recv(clientSocketFD, ack_buf, sizeof(ack_buf), 0);
 
         // Send menu
-        send_to_client("[1].Register  [2].Login  [3].Exit \n", clientSocketFD);
+        send_to_client("[1].Register  [2].Login  [3].Exit \n> ", clientSocketFD);
 
         // Receive choice
         ssize_t bytes_recv = recv(clientSocketFD, &choice, sizeof(choice), 0);
