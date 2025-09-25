@@ -197,9 +197,34 @@ strcat(buffer, "----------------------------------------------------------\n");
 send_to_client(buffer, sock);
 	sqlite3_finalize(stmt);
     close_db(db);
+} //ListTasks ends here.
+
+void RemoveTask(int sock)
+{
+int taskid;
+recv(sock, &taskid, sizeof(taskid), 0);
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
+   	 }
+
+
+char *sql = sqlite3_mprintf(
+"DELETE FROM Tasks WHERE Task_id = '%d';",taskid);
+char *err = NULL;
+int rc = sqlite3_exec(db, sql, 0, 0, &err);
+	if(rc != SQLITE_OK){
+	fprintf(stderr, "ERROR REMOVING TASK %s\n",err);
+	sqlite3_free(err);
+	sqlite3_free(sql);
+	close_db(db);
+	}
+	send_to_client("Task Removed \n",sock);
+	sqlite3_free(err);
+	sqlite3_free(sql);
+	close_db(db);
+
 }
-
-
 
 void Todo_Menu(int sock,int userid)
 {
@@ -230,7 +255,7 @@ switch (choice)
 	send_to_client("Update Task called\n",sock);
 	break;
    case 5:
-	send_to_client("Remove Task called\n",sock);
+	RemoveTask(sock);
 	break;
    case 6:
 	return;
