@@ -119,7 +119,7 @@ int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
 	return SQLITE_OK;
 } // insert_user ends here
 
-//WORKING HERE -----------------------------------------------------------------------------------
+
 int Add_tasks(int sock , int userid)
 {
 	char title[256];
@@ -148,7 +148,55 @@ int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
 	sqlite3_free(sql_insert);
 	close_db(db);
 	return SQLITE_OK;
-} // insert_user ends here
+} // Add_tasks ends here
+
+void ListTasks(int sock, int userid)
+{
+char* status;
+char Buffer[128];
+char buffer[4096];
+Buffer[0] = '\0';
+buffer[0] = '\0';
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
+   	 }
+sqlite3_stmt *stmt;
+const char *sql = "SELECT Task_id, Title, Status FROM Tasks WHERE User_id = ?;";
+int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+if (rc != SQLITE_OK)
+{
+fprintf(stderr, "can't read from DB: %s\n", sqlite3_errmsg(db));
+}
+sqlite3_bind_int(stmt, 1, userid);
+//snprintf(Buffer,sizeof(Buffer),"%-5s%-30s%s\n", "Id", "Tasks", "Status");
+//send_to_client(Buffer,sock);
+while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+{
+int id = sqlite3_column_int(stmt, 0);
+char* Task = (char *)sqlite3_column_text(stmt, 1);
+if(!Task)
+{
+Task = "NULL";
+}
+int state = sqlite3_column_int(stmt, 2);
+if(state == 0)
+{
+status = "Pending";
+}
+else
+{
+	status = "Done";
+}	
+char temp[256];
+snprintf(temp, sizeof(temp), "%-5d%-30s%s\n", id, Task, status);
+strcat(buffer, temp);
+//send_to_client(buffer, sock);
+}
+send_to_client(buffer, sock);
+	sqlite3_finalize(stmt);
+    close_db(db);
+}
 
 
 
@@ -172,7 +220,7 @@ switch (choice)
 	Add_tasks(sock, userid);
 	break;
    case 2:
-	send_to_client("List Task called\n",sock);
+	ListTasks(sock, userid);
 	break;
    case 3:
 	send_to_client("Complete Task called\n",sock);
