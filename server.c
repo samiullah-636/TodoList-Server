@@ -252,6 +252,35 @@ int rc = sqlite3_exec(db, sql, 0, 0, &err);
 
 
 }
+void Edit_Task(int sock)
+{
+int taskid;
+char updated_task[256];
+recv(sock, updated_task, sizeof(updated_task), 0);
+recv(sock, &taskid, sizeof(taskid), 0);
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
+   	 }
+
+
+char *sql = sqlite3_mprintf(
+"UPDATE Tasks SET Title = '%q' WHERE Task_id = '%d';",updated_task,taskid);
+char *err = NULL;
+int rc = sqlite3_exec(db, sql, 0, 0, &err);
+	if(rc != SQLITE_OK){
+	fprintf(stderr, "ERROR EDITING TASK %s\n",err);
+	sqlite3_free(err);
+	sqlite3_free(sql);
+	close_db(db);
+	}
+	send_to_client("Operation Successful \n",sock);
+	sqlite3_free(err);
+	sqlite3_free(sql);
+	close_db(db);
+
+
+}
 void Todo_Menu(int sock,int userid)
 {
 int choice;
@@ -260,7 +289,7 @@ while(1)
 {
 memset(ack_buf, 0, sizeof(ack_buf));
 recv(sock, ack_buf, sizeof(ack_buf), 0);
-send_to_client("[1].Add  [2].List  [3].Complete  [4].Update  [5].Remove  [6].Logout \n> ",sock);
+send_to_client("[1].Add  [2].List  [3].Complete  [4].Edit  [5].Remove  [6].Logout \n> ",sock);
 ssize_t bytes_recv = recv(sock, &choice, sizeof(choice), 0);
         if (bytes_recv <= 0) {
             printf("Client disconnected unexpectedly.\n");
@@ -278,7 +307,7 @@ switch (choice)
 	Mark_Status(sock);
 	break;
    case 4:
-	send_to_client("Update Task called\n",sock);
+	Edit_Task(sock);
 	break;
    case 5:
 	RemoveTask(sock);
