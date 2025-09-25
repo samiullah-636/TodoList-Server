@@ -28,6 +28,7 @@ char username[1024];
             send(sock, username, strlen(username)+1, 0);
 
 }
+
 void handle_mainmenu(int sock)
 {
 	char menu[1024];
@@ -67,12 +68,23 @@ char buffer[1024];
  printf("%s\n", buffer);
 }
 
+void handle_Addtask(int sock)
+{
+	printf("Enter Title: ");
+	char title[256];
+        fgets(title, sizeof(title), stdin);
+        title[strcspn(title, "\n")] = '\0';
+        send(sock, title, strlen(title)+1, 0);
+	handle_todoresponse(sock);
+	
+}
+
 void handle_todomenu(int sock)
 {
+char menu[1024];
 	while(1)
 	{
-		char menu[1024];
-	        // Clear the buffer to avoid garbage value
+		        // Clear the buffer to avoid garbage value
         memset(menu, 0, sizeof(menu));
 
         // Receive and print the menu from the server
@@ -85,12 +97,17 @@ menu[bytes_recv] = '\0';
 printf("%s", menu);
 //printf("BUFFER BYTES: %ld\n", bytes_recv);
 int choice = handle_choice(sock);
-if (choice == 6)
+switch(choice)
 {
-	printf("Logging out..\n");
-	return;
+	case 1:
+		handle_Addtask(sock);
+		break;
+	case 6:
+		printf("Logging out ..\n");
+		return;
+	
 }
-handle_todoresponse(sock);
+
 
 	}
 }
