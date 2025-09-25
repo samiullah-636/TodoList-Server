@@ -86,7 +86,7 @@ void handle_Listtask(int sock)
 
 }
 
-void handle_Removetask(int sock)
+void getTaskid(int sock)
 {
 	char input[1024];
          int taskid;
@@ -124,8 +124,11 @@ switch(choice)
 	case 2:
 		handle_Listtask(sock);
 		break;
+	case 3:
+		getTaskid(sock);
+		break;
 	case 5:
-		handle_Removetask(sock);
+		getTaskid(sock);
 		break;
 	case 6:
 		printf("Logging out ..\n");
