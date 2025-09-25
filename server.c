@@ -24,7 +24,10 @@ struct sockaddr_in* createAddress() {
     address->sin_addr.s_addr = INADDR_ANY;
     return address;
 }
-
+void send_to_client(char* message,int sock)
+{
+send(sock, message, strlen(message), 0);
+}
 
 void bytes_to_hex(const unsigned char *value, size_t valueLen, char *hexValue)
   {
@@ -79,10 +82,7 @@ int create_table(sqlite3 *db) {
         "Task_id INTEGER PRIMARY KEY AUTOINCREMENT,"
         "User_id INTEGER NOT NULL,"
         "Title TEXT NOT NULL,"
-        "Description TEXT,"
-        "Status TEXT DEFAULT 'pending',"
-        "Deadline DATETIME,"
-        "created_at DATETIME DEFAULT CURRENT_TIMESTAMP,"
+        "Status INTEGER ,"
         "FOREIGN KEY(User_id) REFERENCES Users(User_id)"
         ");";
 
@@ -119,12 +119,24 @@ int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
 	return SQLITE_OK;
 } // insert_user ends here
 
+//WORKING HERE -----------------------------------------------------------------------------------
+//int Add_tasks(int sock , int userid)
+//{
+//char *sql_insert = sqlite3_mprintf(
+//"INSERT INTO Tasks(User_id, Title, Status) VALUES ('%q', '%q');",userid, Title, 0);
+//char *err = NULL;
+//int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
+//	if(rc != SQLITE_OK){
+//	fprintf(stderr, "ERROR INSERTING TASK %s\n",err);
+//	sqlite3_free(err);
+//	return rc;
+//	}
+//	return SQLITE_OK;
+//} // insert_user ends here
 
-void send_to_client(char* message,int sock)
-{
-send(sock, message, strlen(message), 0);
-}
-void Todo_Menu(int sock)
+
+
+void Todo_Menu(int sock,int userid)
 {
 int choice;
 char ack_buf[8];
@@ -222,6 +234,36 @@ while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
     close_db(db);
     return false;
 }
+
+int getuserID(const char* username)
+{
+	int userid;
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
+        return 1;
+   	 }
+sqlite3_stmt *stmt;
+const char *sql = "SELECT User_id FROM Users WHERE username = ?;";
+int rc = sqlite3_prepare_v2(db, sql, -1, &stmt, NULL);
+if (rc != SQLITE_OK)
+{
+fprintf(stderr, "can't read from DB: %s\n", sqlite3_errmsg(db));
+return 1;
+}
+sqlite3_bind_text(stmt, 1, username, -1, SQLITE_STATIC);
+while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
+{
+	userid = sqlite3_column_int(stmt, 0);
+		
+}
+sqlite3_finalize(stmt);
+    close_db(db);
+    return userid;
+
+
+}
+
 // verify_password function ends here
 void login(char* username, char* password, int sock) {
     if (!user_exists(username)) {
@@ -235,8 +277,9 @@ void login(char* username, char* password, int sock) {
     }
     else
     {
+	    int userid = getuserID(username);
 	    send_to_client("✅ Login successful!\n✨ Welcome aboard ✨",sock);
-	    Todo_Menu(sock);
+	    Todo_Menu(sock,userid);
 
     }
     //char token[64];
@@ -251,11 +294,6 @@ void login(char* username, char* password, int sock) {
 
 void Register(char* username , char* password, int sock)
 {
-if (user_exists(username))
-{
-send_to_client("Username Already Exists\n",sock);
-return;
-}
 char hash_hex[HASH_HEX_LEN];
 sha256_hash(password,hash_hex);
 sqlite3 *db = open_db(DB_FILE);
@@ -268,6 +306,12 @@ if (create_table(db) != SQLITE_OK)
 	close_db(db);
         printf("Error creating tables.\n");
 }
+if (user_exists(username))
+{
+send_to_client("Username Already Exists\n",sock);
+return;
+}
+
 if (insert_user(db, username, hash_hex) != SQLITE_OK)
 {
 printf("Insert failed \n");
