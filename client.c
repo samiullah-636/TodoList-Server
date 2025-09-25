@@ -81,7 +81,7 @@ void handle_Addtask(int sock)
 
 void handle_Listtask(int sock)
 {
-//	handle_todoresponse(sock);
+	handle_todoresponse(sock);
 	handle_todoresponse(sock);
 
 }
