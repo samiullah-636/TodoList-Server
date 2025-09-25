@@ -120,19 +120,35 @@ int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
 } // insert_user ends here
 
 //WORKING HERE -----------------------------------------------------------------------------------
-//int Add_tasks(int sock , int userid)
-//{
-//char *sql_insert = sqlite3_mprintf(
-//"INSERT INTO Tasks(User_id, Title, Status) VALUES ('%q', '%q');",userid, Title, 0);
-//char *err = NULL;
-//int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
-//	if(rc != SQLITE_OK){
-//	fprintf(stderr, "ERROR INSERTING TASK %s\n",err);
-//	sqlite3_free(err);
-//	return rc;
-//	}
-//	return SQLITE_OK;
-//} // insert_user ends here
+int Add_tasks(int sock , int userid)
+{
+	char title[256];
+	recv(sock, title, sizeof(title),0);
+
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
+        return 1;
+   	 }
+
+
+char *sql_insert = sqlite3_mprintf(
+"INSERT INTO Tasks(User_id, Title, Status) VALUES ('%d', '%q','%d');",userid, title, 0);
+char *err = NULL;
+int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
+	if(rc != SQLITE_OK){
+	fprintf(stderr, "ERROR INSERTING TASK %s\n",err);
+	sqlite3_free(err);
+	sqlite3_free(sql_insert);
+	close_db(db);
+	return rc;
+	}
+	send_to_client("Task Inserted \n",sock);
+	sqlite3_free(err);
+	sqlite3_free(sql_insert);
+	close_db(db);
+	return SQLITE_OK;
+} // insert_user ends here
 
 
 
@@ -153,7 +169,7 @@ ssize_t bytes_recv = recv(sock, &choice, sizeof(choice), 0);
 switch (choice)
    { 
    case 1:
-	send_to_client("Add Task called\n",sock);
+	Add_tasks(sock, userid);
 	break;
    case 2:
 	send_to_client("List Task called\n",sock);
