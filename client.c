@@ -70,11 +70,11 @@ char buffer[1024];
 
 void handle_Addtask(int sock)
 {
-	printf("Enter Title: ");
-	char title[256];
-        fgets(title, sizeof(title), stdin);
-        title[strcspn(title, "\n")] = '\0';
-        send(sock, title, strlen(title)+1, 0);
+	printf("Enter Task: ");
+	char task[256];
+        fgets(task, sizeof(task), stdin);
+        task[strcspn(task, "\n")] = '\0';
+        send(sock, task, strlen(task)+1, 0);
 	handle_todoresponse(sock);
 	
 }
@@ -86,7 +86,7 @@ void handle_Listtask(int sock)
 
 }
 
-void getTaskid(int sock)
+int getTaskid(int sock)
 {
 	char input[1024];
          int taskid;
@@ -96,6 +96,17 @@ void getTaskid(int sock)
 	taskid= atoi(input);
         send(sock, &taskid, sizeof(taskid), 0);
 	handle_todoresponse(sock);
+}
+
+void handle_Edit_Task(int sock)
+{
+        printf("Enter New Task: ");
+	char task[256];
+        fgets(task, sizeof(task), stdin);
+        task[strcspn(task, "\n")] = '\0';
+        send(sock, task, strlen(task)+1, 0);
+
+         getTaskid(sock);
 }
 
 void handle_todomenu(int sock)
@@ -126,6 +137,9 @@ switch(choice)
 		break;
 	case 3:
 		getTaskid(sock);
+		break;
+	case 4:
+		handle_Edit_Task( sock);
 		break;
 	case 5:
 		getTaskid(sock);
