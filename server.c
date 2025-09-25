@@ -225,7 +225,33 @@ int rc = sqlite3_exec(db, sql, 0, 0, &err);
 	close_db(db);
 
 }
+void Mark_Status(int sock)
+{
+int taskid;
+recv(sock, &taskid, sizeof(taskid), 0);
+sqlite3 *db = open_db(DB_FILE);
+if (!db) {
+        fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
+   	 }
 
+
+char *sql = sqlite3_mprintf(
+"UPDATE Tasks SET Status = '%d' WHERE Task_id = '%d';",1,taskid);
+char *err = NULL;
+int rc = sqlite3_exec(db, sql, 0, 0, &err);
+	if(rc != SQLITE_OK){
+	fprintf(stderr, "ERROR MARKING COMPLETE %s\n",err);
+	sqlite3_free(err);
+	sqlite3_free(sql);
+	close_db(db);
+	}
+	send_to_client("Marked Done \n",sock);
+	sqlite3_free(err);
+	sqlite3_free(sql);
+	close_db(db);
+
+
+}
 void Todo_Menu(int sock,int userid)
 {
 int choice;
@@ -249,7 +275,7 @@ switch (choice)
 	ListTasks(sock, userid);
 	break;
    case 3:
-	send_to_client("Complete Task called\n",sock);
+	Mark_Status(sock);
 	break;
    case 4:
 	send_to_client("Update Task called\n",sock);
