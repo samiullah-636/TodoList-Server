@@ -153,7 +153,7 @@ int rc = sqlite3_exec(db, sql_insert, 0, 0, &err);
 void ListTasks(int sock, int userid)
 {
 char* status;
-char Buffer[128];
+char Buffer[256];
 char buffer[4096];
 Buffer[0] = '\0';
 buffer[0] = '\0';
@@ -169,8 +169,9 @@ if (rc != SQLITE_OK)
 fprintf(stderr, "can't read from DB: %s\n", sqlite3_errmsg(db));
 }
 sqlite3_bind_int(stmt, 1, userid);
-//snprintf(Buffer,sizeof(Buffer),"%-5s%-30s%s\n", "Id", "Tasks", "Status");
-//send_to_client(Buffer,sock);
+snprintf(Buffer,sizeof(Buffer),"%-5s%-30s%s\n", "Id", "Tasks", "Status");
+strcat(Buffer, "----------------------------------------------------------\n");
+send_to_client(Buffer,sock);
 while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
 {
 int id = sqlite3_column_int(stmt, 0);
@@ -191,7 +192,7 @@ else
 char temp[256];
 snprintf(temp, sizeof(temp), "%-5d%-30s%s\n", id, Task, status);
 strcat(buffer, temp);
-//send_to_client(buffer, sock);
+strcat(buffer, "----------------------------------------------------------\n");
 }
 send_to_client(buffer, sock);
 	sqlite3_finalize(stmt);
