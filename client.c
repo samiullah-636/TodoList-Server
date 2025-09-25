@@ -86,6 +86,18 @@ void handle_Listtask(int sock)
 
 }
 
+void handle_Removetask(int sock)
+{
+	char input[1024];
+         int taskid;
+	 printf("Enter Id: ");
+	 fgets(input, sizeof(input), stdin);
+	input[strcspn(input, "\n")] = 0;
+	taskid= atoi(input);
+        send(sock, &taskid, sizeof(taskid), 0);
+	handle_todoresponse(sock);
+}
+
 void handle_todomenu(int sock)
 {
 char menu[1024];
@@ -111,6 +123,9 @@ switch(choice)
 		break;
 	case 2:
 		handle_Listtask(sock);
+		break;
+	case 5:
+		handle_Removetask(sock);
 		break;
 	case 6:
 		printf("Logging out ..\n");
