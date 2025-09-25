@@ -79,6 +79,13 @@ void handle_Addtask(int sock)
 	
 }
 
+void handle_Listtask(int sock)
+{
+//	handle_todoresponse(sock);
+	handle_todoresponse(sock);
+
+}
+
 void handle_todomenu(int sock)
 {
 char menu[1024];
@@ -101,6 +108,9 @@ switch(choice)
 {
 	case 1:
 		handle_Addtask(sock);
+		break;
+	case 2:
+		handle_Listtask(sock);
 		break;
 	case 6:
 		printf("Logging out ..\n");
