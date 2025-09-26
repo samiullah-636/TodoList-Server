@@ -157,6 +157,7 @@ char Buffer[256];
 char buffer[4096];
 Buffer[0] = '\0';
 buffer[0] = '\0';
+int found = 0;
 sqlite3 *db = open_db(DB_FILE);
 if (!db) {
         fprintf(stderr,"Error opening DB.%s\n", sqlite3_errmsg(db));
@@ -174,6 +175,7 @@ strcat(Buffer, "----------------------------------------------------------\n");
 send_to_client(Buffer,sock);
 while((rc = sqlite3_step(stmt)) == SQLITE_ROW)
 {
+	found = 1;
 int id = sqlite3_column_int(stmt, 0);
 char* Task = (char *)sqlite3_column_text(stmt, 1);
 if(!Task)
@@ -193,6 +195,10 @@ char temp[256];
 snprintf(temp, sizeof(temp), "%-5d%-30s%s\n", id, Task, status);
 strcat(buffer, temp);
 strcat(buffer, "----------------------------------------------------------\n");
+}
+if (!found)
+{
+snprintf(buffer, sizeof(buffer), "%-5s%-30s%s\n", "NULL", "NULL", "NULL" );
 }
 send_to_client(buffer, sock);
 	sqlite3_finalize(stmt);
